@@ -61,22 +61,6 @@ Item.prototype.spawn = function(){
       break;
     }
   };
-Item.prototype.move = function(){
-    switch (this.direction) {
-      case 'left':
-      this.x -= this.speed;
-      break;
-      case 'down':
-      this.y += this.speed;
-      break;
-      case 'up':
-      this.y -= this.speed;
-      break;
-      case 'right':
-      this.x += this.speed;
-      break;
-    }
-  };
   Item.prototype.crashWith = function(obj){
     return getBottom(this) >= getTop(obj) &&
            getTop(this) <= getBottom(obj) &&
@@ -95,17 +79,34 @@ Item.prototype.move = function(){
   function getRight(obj){
     return obj.x + obj.width;
   }
+  function move(obj){
+      switch (obj.direction) {
+        case 'left':
+        obj.x -= obj.speed;
+        break;
+        case 'down':
+        obj.y += obj.speed;
+        break;
+        case 'up':
+        obj.y -= obj.speed;
+        break;
+        case 'right':
+        obj.x += obj.speed;
+        break;
+        default:
+        break;
+      }
+    }
 function generateDimension(type){
   var maxSize;
   var minSize;
   if(type === 'asteroid'){
     maxSize = 50;
     minSize = 10;
+    return generateRandom(maxSize, minSize);
   }else if(type === 'fuel'){
-    maxSize = 30;
-    minSize = 5;
+    return 10;
   }
-  return generateRandom(maxSize, minSize);
 }
 
 //Game rendering
@@ -119,11 +120,9 @@ function generateDimension(type){
     amount: 10,
     x: canvas.width * 0.9,
     y: canvas.height * 0.9,
-    height: 20,
-    width: 20,
     draw: function(){
       ctx.fillStyle = 'rgb(219, 241, 37)';
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(this.x, this.y, this.amount * 10, 50);
     }
   };
   var player = {
@@ -131,6 +130,8 @@ function generateDimension(type){
     y: canvas.height/2,
     height: 40,
     width:40,
+    speed: 3,
+    direction:'',
     draw: function(){
       ctx.fillStyle = 'rgb(99, 21, 177)';
       ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -140,25 +141,28 @@ function generateDimension(type){
   function draw(){
     ctx.clearRect(0,0, canvas.width, canvas.height);
     player.draw();
+    move(player);
+    fuelBar.draw();
     isGameOver = false;
     if(fuelBar.amount === 0) gameOver = true;
     itemArray.forEach(function(item, index){
       item.draw();
-      item.move();
+      move(item);
       if(item.outOfBounds()){
-        itemArray.splice(index, 1).destroy();
+        itemArray.splice(index, 1);
       }
       if(item.crashWith(player)){
         if(item.type === 'asteroid'){
           gameOver = true;
         }else if( item.type === 'fuel'){
-          fuelBar.amount++;
+          if(fuelBar.amount < 10) fuelBar.amount++;
+          itemArray.splice(index, 1);
         }
       }
     });
     if(!gameOver)requestAnimationFrame(draw);
   }
-  // 30 frames per second
+
   requestAnimationFrame(draw);
 
   function createItemInterval(){
@@ -166,9 +170,11 @@ function generateDimension(type){
     var intervalId = setInterval(function(){
       if(!gameOver){
         var item;
+        if(counter % 4 ===0){
+          fuelBar.amount--;
+        }
         if(counter % 2 === 0){
           item = new Item('fuel');
-          fuelBar.amount--;
           item.spawn();
           itemArray.push(item);
         }
@@ -179,26 +185,26 @@ function generateDimension(type){
       }else{
         clearInterval(intervalId);
       }
-    }, 5000);
+    }, 500);
   }
 //Game controls
 $(document).keydown(function(event) {
   switch (event.keyCode) {
     //move left
     case 65:
-    player.x -= 20;
+    player.direction = 'left';
     break;
     // move up
     case 87:
-    player.y -= 20;
+    player.direction = 'up';
     break;
     case 68:
-    //move up
-    player.x += 20;
+    //move right
+    player.direction = 'right';
     break;
     //move down
     case 83:
-    player.y += 20;
+    player.direction = 'down';
     break;
   }  /* Act on the event */
 });
