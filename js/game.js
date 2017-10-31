@@ -19,20 +19,9 @@ function generateRandom(max, min){
     }
   ctx.fillRect(this.x, this.y, this.width, this.height);
 };
-Item.prototype.outOfBounds = function(){
-    if ( this.x > canvas.width ||
-         this.y > canvas.height ||
-         this.x < 0 ||
-         this.y < 0 )
-        {
-         return true;
-       }else{
-         return false;
-       }
-};
 Item.prototype.spawn = function(){
     //decide on a boundary wall to spawn on
-    var wall = (Math.floor(Math.random()*3));
+    var wall = Math.floor(generateRandom(4, 0));
     //spawn somewhere on chosen wall
     switch (wall) {
       //spawns on top wall, moving down
@@ -55,6 +44,11 @@ Item.prototype.spawn = function(){
       break;
       //spawn on left wall, moving right
       case 3:
+      this.x = 0;
+      this.y = generateRandom(canvas.height, 0);
+      this.direction = 'right';
+      break;
+      case 4:
       this.x = 0;
       this.y = generateRandom(canvas.height, 0);
       this.direction = 'right';
@@ -108,20 +102,46 @@ function generateDimension(type){
     return 10;
   }
 }
-
+function outOfBounds(obj){
+    if ( obj.x > canvas.width ||
+         obj.y > canvas.height ||
+         obj.x < 0 ||
+         obj.y < 0 )
+        {
+         return true;
+       }else{
+         return false;
+       }
+}
 //Game rendering
   var canvas = document.querySelector('.my-game');
-  canvas.width = window.innerWidth - 30;
-  canvas.height = window.innerHeight - 30;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
   var ctx = canvas.getContext('2d');
   var gameOver = false;
   var itemArray = [];
+  var time = {
+    amount: 0,
+    x:canvas.width * 0.95,
+    y: canvas.height * 0.05,
+    draw: function(){
+      ctx.fillStyle = 'black';
+      ctx.font = '24px sans-serif';
+      ctx.fillText(this.amount,this.x, this.y);
+    }
+  };
   var fuelBar = {
     amount: 10,
     x: canvas.width * 0.9,
-    y: canvas.height * 0.9,
+    y: canvas.height * 0.8,
     draw: function(){
-      ctx.fillStyle = 'rgb(219, 241, 37)';
+      if(this.amount > 7){
+        ctx.fillStyle = 'rgb(41, 236, 31)';
+      }else if(this.amount > 3){
+        ctx.fillStyle = 'rgb(219, 241, 37)';
+      }else{
+        ctx.fillStyle = 'rgb(244, 16, 16)';
+      }
       ctx.fillRect(this.x, this.y, this.amount * 10, 50);
     }
   };
@@ -142,13 +162,24 @@ function generateDimension(type){
     ctx.clearRect(0,0, canvas.width, canvas.height);
     player.draw();
     move(player);
+    if(time.amount < 5){
+      ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
+      ctx.font = '14px sans-serif';
+      ctx.fillText('Collect the fuel and dodge the asteroids. WASD to move.',canvas.width * 0.4, canvas.height * 0.25);
+    }
+    if(outOfBounds(player)){
+      ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
+      ctx.font = '14px sans-serif';
+      ctx.fillText('Warning: Entering Deep Space. Turn Back!',canvas.width * 0.4, canvas.height * 0.05);
+    }
     fuelBar.draw();
+    time.draw();
     isGameOver = false;
     if(fuelBar.amount === 0) gameOver = true;
     itemArray.forEach(function(item, index){
       item.draw();
       move(item);
-      if(item.outOfBounds()){
+      if(outOfBounds(item)){
         itemArray.splice(index, 1);
       }
       if(item.crashWith(player)){
@@ -177,6 +208,7 @@ function generateDimension(type){
           item = new Item('fuel');
           item.spawn();
           itemArray.push(item);
+          time.amount++;
         }
         item = new Item('asteroid');
         item.spawn();
