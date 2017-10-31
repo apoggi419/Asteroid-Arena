@@ -5,14 +5,29 @@ $(document).ready(function() {
     this.height = generateDimension(type);
     this.width = generateDimension(type);
     this.speed = generateSpeed();
+    this.powerType = this.generatePowerType();
   }
+  Item.prototype.generatePowerType = function(){
+    if(this.type !== 'asteroid'){
+      var index = Math.floor(generateRandom(powerTypes.length,0));
+      if(index === powerTypes.length) index--;
+      return powerTypes[index];
+    }else{
+      return null;
+    }
+  };
   Item.prototype.draw = function(){
     if(this.type === 'asteroid'){
       ctx.fillStyle = 'rgb(121, 121, 122)';
     }else if(this.type === 'fuel'){
       ctx.fillStyle = 'rgb(231, 163, 31)';
     }else if(this.type === 'power-up'){
-      ctx.fillStyle = 'rgb(66, 138, 223)';
+      if(this.powerType === 'quantum-blast'){
+        ctx.fillStyle = 'rgb(66, 138, 223)';
+      }else if(this.powerType === 'particle-slow'){
+        ctx.fillStyle = 'rgb(24, 101, 12)';
+      }
+
     }
   ctx.fillRect(this.x, this.y, this.width, this.height);
 };
@@ -126,6 +141,12 @@ function quantumBlastMessage(){
   ctx.font = '14px sans-serif';
   ctx.fillText('Quantum Blast is ready! Press E to obliterate!',canvas.width * 0.2, canvas.height * 0.05);
 }
+function particleSlowMessage(){
+  ctx.fillStyle = 'rgb(24, 101, 12)';
+  ctx.font = '14px sans-serif';
+  ctx.fillText('Particle Slow is ready! Press E to warp time!',canvas.width * 0.2, canvas.height * 0.05);
+}
+
 function drawGameOver(){
   var newRecord = false;
   var record = $('.record').html;
@@ -148,12 +169,12 @@ function createItemInterval(){
   var intervalId = setInterval(function(){
     if(!gameOver){
       var item;
-      if(counter % 20 === 0 && counter != 0){
+      if(counter % 14 === 0 && counter != 0){
         item = new Item('power-up');
         item.spawn();
         itemArray.push(item);
       }
-      if(counter % 10 === 0 && counter != 0){
+      if(counter % 12 === 0 && counter != 0){
         fuelBar.amount--;
       }
       if(counter % 4 === 0 && counter != 0){
@@ -192,6 +213,7 @@ function generateSpeed(){
   var gameOver = false;
   var itemArray = [];
   var poweredUp = false;
+  var powerTypes = ['quantum-blast', 'particle-slow'];
 //Unique Game Objects----------------
   var time = {
     amount: 0,
@@ -225,9 +247,14 @@ function generateSpeed(){
     width:40,
     speed: 3,
     direction:'',
+    power:null,
     draw: function(){
       if(poweredUp){
-        ctx.fillStyle = 'rgb(66, 138, 223)';
+        if(this.power === 'quantum-blast'){
+          ctx.fillStyle = 'rgb(66, 138, 223)';
+        }else if(this.power === 'particle-slow'){
+          ctx.fillStyle = 'rgb(24, 101, 12)';
+        }
       }else{
         ctx.fillStyle = 'rgb(99, 21, 177)';
       }
@@ -257,13 +284,15 @@ function generateSpeed(){
           itemArray.splice(index, 1);
         }else if(item.type === 'power-up'){
           poweredUp = true;
+          player.power = item.powerType;
           itemArray.splice(index, 1);
         }
       }
     });
     if(time.amount < 3) drawInstructions();
     if(outOfBounds(player)) drawWarning();
-    if (poweredUp) quantumBlastMessage();
+    if (player.power === 'quantum-blast') quantumBlastMessage();
+    if(player.power === 'particle-slow') particleSlowMessage();
     time.draw();
     fuelBar.draw();
     if(!gameOver)requestAnimationFrame(draw);
@@ -293,10 +322,15 @@ $(document).keydown(function(event) {
     break;
     case 69:
     if(poweredUp){
-      while(itemArray.length > 5){
-        itemArray.shift();
+      if(player.power === 'quantum-blast'){
+        itemArray = [];
+      }else if(player.power === 'particle-slow'){
+        itemArray.forEach(function(item){
+          item.speed *= 0.1;
+        });
       }
       poweredUp = false;
+      player.power = null;
     }
     break;
   }  /* Act on the event */
