@@ -1,21 +1,18 @@
 $(document).ready(function() {
-//useful global function
-function generateRandom(max, min){
-  return Math.random() * (max - min) + min;
-}
-//Game Objects
-  //this item can be fuel, an asteroid, or an enemy
+//Item Constructor and prototypes------
   function Item(type){
     this.type = type;
     this.height = generateDimension(type);
     this.width = generateDimension(type);
-    this.speed = generateRandom(2, 0.2);
+    this.speed = generateSpeed();
   }
   Item.prototype.draw = function(){
     if(this.type === 'asteroid'){
       ctx.fillStyle = 'rgb(121, 121, 122)';
     }else if(this.type === 'fuel'){
       ctx.fillStyle = 'rgb(231, 163, 31)';
+    }else if(this.type === 'power-up'){
+      ctx.fillStyle = 'rgb(66, 138, 223)';
     }
   ctx.fillRect(this.x, this.y, this.width, this.height);
 };
@@ -61,6 +58,7 @@ Item.prototype.spawn = function(){
            getRight(this) >= getLeft(obj) &&
            getLeft(this) <= getRight(obj);
   };
+  //General Functions--------------
   function getTop(obj){
     return obj.y;
   }
@@ -98,7 +96,7 @@ function generateDimension(type){
     maxSize = 50;
     minSize = 10;
     return generateRandom(maxSize, minSize);
-  }else if(type === 'fuel'){
+  }else if(type === 'fuel' || type === 'power-up'){
     return 10;
   }
 }
@@ -113,6 +111,79 @@ function outOfBounds(obj){
          return false;
        }
 }
+function drawInstructions(){
+  ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
+  ctx.font = '14px sans-serif';
+  ctx.fillText('Collect the fuel and dodge the asteroids. WASD to move.',canvas.width * 0.38, canvas.height * 0.25);
+}
+function drawWarning(){
+  ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
+  ctx.font = '14px sans-serif';
+  ctx.fillText('Warning: Entering Deep Space. Turn Back!',canvas.width * 0.4, canvas.height * 0.05);
+}
+function quantumBlastMessage(){
+  ctx.fillStyle = 'rgb(66, 138, 223)';
+  ctx.font = '14px sans-serif';
+  ctx.fillText('Quantum Blast is ready! Press E to obliterate!',canvas.width * 0.2, canvas.height * 0.05);
+}
+function drawGameOver(){
+  var newRecord = false;
+  var record = $('.record').html;
+  console.log(record);
+  ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
+  ctx.font = '14px sans-serif';
+  if(fuelBar.amount === 0){
+    ctx.fillText('Game Over! You ran out of Fuel!',canvas.width * 0.42, canvas.height * 0.35);
+  }else{
+    ctx.fillText('Game Over!',canvas.width * 0.48, canvas.height * 0.35);
+  }
+  if(time.amount > record) newRecord = true;
+  if(newRecord){
+    var name = prompt('New Record! Enter your name to be immortalized.');
+    $('.record-holder').html(name);
+  }
+}
+function createItemInterval(){
+  var counter = 0;
+  var intervalId = setInterval(function(){
+    if(!gameOver){
+      var item;
+      if(counter % 20 === 0 && counter != 0){
+        item = new Item('power-up');
+        item.spawn();
+        itemArray.push(item);
+      }
+      if(counter % 10 === 0 && counter != 0){
+        fuelBar.amount--;
+      }
+      if(counter % 4 === 0 && counter != 0){
+        item = new Item('fuel');
+        item.spawn();
+        itemArray.push(item);
+        time.amount++;
+      }
+      item = new Item('asteroid');
+      item.spawn();
+      itemArray.push(item);
+      counter++;
+    }else{
+      clearInterval(intervalId);
+    }
+  }, 250);
+}
+function generateRandom(max, min){
+  return Math.random() * (max - min) + min;
+}
+function generateSpeed(){
+  var maxSpeed = 2;
+  var minSpeed = 0.2;
+  var generatedSpeed = generateRandom(maxSpeed, minSpeed);
+  if(this.type === 'power-up'){
+    return generatedSpeed * 3;
+  }else{
+    return generatedSpeed;
+  }
+}
 //Game rendering
   var canvas = document.querySelector('.my-game');
   canvas.width = window.innerWidth;
@@ -120,6 +191,8 @@ function outOfBounds(obj){
   var ctx = canvas.getContext('2d');
   var gameOver = false;
   var itemArray = [];
+  var poweredUp = false;
+//Unique Game Objects----------------
   var time = {
     amount: 0,
     x:canvas.width * 0.95,
@@ -153,29 +226,23 @@ function outOfBounds(obj){
     speed: 3,
     direction:'',
     draw: function(){
-      ctx.fillStyle = 'rgb(99, 21, 177)';
+      if(poweredUp){
+        ctx.fillStyle = 'rgb(66, 138, 223)';
+      }else{
+        ctx.fillStyle = 'rgb(99, 21, 177)';
+      }
       ctx.fillRect(this.x, this.y, this.width, this.height);
     }
   };
+  //End Unique Game Objects------------------
   createItemInterval();
   function draw(){
     ctx.clearRect(0,0, canvas.width, canvas.height);
     player.draw();
     move(player);
-    if(time.amount < 5){
-      ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
-      ctx.font = '14px sans-serif';
-      ctx.fillText('Collect the fuel and dodge the asteroids. WASD to move.',canvas.width * 0.4, canvas.height * 0.25);
-    }
-    if(outOfBounds(player)){
-      ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
-      ctx.font = '14px sans-serif';
-      ctx.fillText('Warning: Entering Deep Space. Turn Back!',canvas.width * 0.4, canvas.height * 0.05);
-    }
-    fuelBar.draw();
-    time.draw();
     isGameOver = false;
     if(fuelBar.amount === 0) gameOver = true;
+    //Iterate through array of obstacles---------
     itemArray.forEach(function(item, index){
       item.draw();
       move(item);
@@ -188,37 +255,23 @@ function outOfBounds(obj){
         }else if( item.type === 'fuel'){
           if(fuelBar.amount < 10) fuelBar.amount++;
           itemArray.splice(index, 1);
+        }else if(item.type === 'power-up'){
+          poweredUp = true;
+          itemArray.splice(index, 1);
         }
       }
     });
+    if(time.amount < 3) drawInstructions();
+    if(outOfBounds(player)) drawWarning();
+    if (poweredUp) quantumBlastMessage();
+    time.draw();
+    fuelBar.draw();
     if(!gameOver)requestAnimationFrame(draw);
+    if(gameOver) drawGameOver();
   }
 
   requestAnimationFrame(draw);
 
-  function createItemInterval(){
-    var counter = 0;
-    var intervalId = setInterval(function(){
-      if(!gameOver){
-        var item;
-        if(counter % 4 ===0){
-          fuelBar.amount--;
-        }
-        if(counter % 2 === 0){
-          item = new Item('fuel');
-          item.spawn();
-          itemArray.push(item);
-          time.amount++;
-        }
-        item = new Item('asteroid');
-        item.spawn();
-        itemArray.push(item);
-        counter++;
-      }else{
-        clearInterval(intervalId);
-      }
-    }, 500);
-  }
 //Game controls
 $(document).keydown(function(event) {
   switch (event.keyCode) {
@@ -237,6 +290,14 @@ $(document).keydown(function(event) {
     //move down
     case 83:
     player.direction = 'down';
+    break;
+    case 69:
+    if(poweredUp){
+      while(itemArray.length > 5){
+        itemArray.shift();
+      }
+      poweredUp = false;
+    }
     break;
   }  /* Act on the event */
 });
