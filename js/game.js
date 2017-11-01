@@ -81,7 +81,7 @@ $(document).ready(function() {
     var minSpeed = 0.2;
     var generatedSpeed = generateRandom(maxSpeed, minSpeed);
     if(this.type === 'power-up'){
-      return generatedSpeed * 1.5;
+      return generatedSpeed * 1.25;
     }else{
       return generatedSpeed;
     }
@@ -143,53 +143,71 @@ $(document).ready(function() {
       }
     }
     //Text instruction functions-------------
-    function drawInstructions(){
-      ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
-      ctx.font = '14px sans-serif';
-      ctx.fillText('Collect the fuel and power-ups. Dodge the asteroids. WASD to move.',canvas.width * 0.37, canvas.height * 0.25);
+    function drawText(name){
+      var messages =[
+        {
+          name: 'instructions',
+          fillStyle: 'rgba(231, 83, 29, 0.71)',
+          fillText: 'Collect the fuel and power-ups. Dodge the asteroids. WASD to move. E to use power-up',
+          x: canvas.width / 2,
+          y: canvas.height / 4
+        },
+        {
+          name: 'out-of-bounds',
+          fillStyle: 'rgba(231, 83, 29, 0.71)',
+          fillText: 'Warning: Entering Deep Space. Turn Back!',
+          x: canvas.width / 2,
+          y: canvas.height / 8
+        },
+        {
+          name: 'game-over',
+          fillStyle: 'rgba(231, 83, 29, 0.71)',
+          fillText: 'Game Over!',
+          x: canvas.width / 2,
+          y: canvas.height / 2
+        },
+        {
+          name: 'low-fuel',
+          fillStyle: 'rgba(231, 83, 29, 0.71)',
+          fillText: 'Warning: Low Fuel!',
+          x: canvas.width / 2,
+          y: canvas.height / 6
+        },
+      ];
+      var currentMsg;
+      messages.forEach(function(message){
+        if(name === message.name){
+          currentMsg = message;
+        }
+      });
+      ctx.fillStyle = currentMsg.fillStyle;
+      ctx.font = '16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(currentMsg.fillText,currentMsg.x, currentMsg.y);
     }
-    function drawWarning(){
-      ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
-      ctx.font = '14px sans-serif';
-      ctx.fillText('Warning: Entering Deep Space. Turn Back!',canvas.width * 0.4, canvas.height * 0.05);
-    }
-    function quantumBlastMessage(){
-      ctx.fillStyle = 'rgb(66, 138, 223)';
-      ctx.font = '14px sans-serif';
-      ctx.fillText('Quantum Blast is ready! Press E to obliterate!',canvas.width * 0.2, canvas.height * 0.05);
-    }
-    function particleSlowMessage(){
-      ctx.fillStyle = 'rgb(55, 161, 22)';
-      ctx.font = '14px sans-serif';
-      ctx.fillText('Particle Slow is ready! Press E to warp time!',canvas.width * 0.2, canvas.height * 0.05);
-    }
-    function atomicShrinkMessage(){
-      ctx.fillStyle = 'rgb(186, 35, 210)';
-      ctx.font = '14px sans-serif';
-      ctx.fillText('Atomic Shrink is ready! Press E to shrink!',canvas.width * 0.2, canvas.height * 0.05);
+    //flash effect on power-up use
+    function drawFX(currentPower){
+      switch (currentPower) {
+          case 'quantum-blast':
+          ctx.fillStyle = 'rgba(66, 138, 223, 0.31)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          break;
+          case 'particle-slow':
+          ctx.fillStyle = 'rgba(55, 161, 22, 0.31)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          break;
+          case 'atomic-shrink':
+          ctx.fillStyle = 'rgba(186, 35, 210, 0.31)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          break;
+      }
     }
     //need to fix new record**
-    function drawGameOver(){
-      var newRecord = false;
-      var record = $('.record').html;
-      console.log(record);
-      ctx.fillStyle = 'rgba(231, 83, 29, 0.93)';
-      ctx.font = '14px sans-serif';
-      if(fuelBar.amount === 0){
-        ctx.fillText('Game Over! You ran out of Fuel!',canvas.width * 0.42, canvas.height * 0.35);
-      }else{
-        ctx.fillText('Game Over!',canvas.width * 0.48, canvas.height * 0.35);
-      }
-      if(time.amount > record) newRecord = true;
-      if(newRecord){
-        var name = prompt('New Record! Enter your name to be immortalized.');
-        $('.record-holder').html(name);
-      }
-    }
     //callback that calls item spawns and tracks time
     function createItemInterval(){
       var counter = 0;
       var intervalId = setInterval(function(){
+        //drawFX here
         if(!gameOver){
           var item;
           if(counter % 10 === 0 && counter != 0){
@@ -262,6 +280,22 @@ $(document).ready(function() {
       speed: 3,
       direction:'',
       power:null,
+      streak:null,
+      checkStreak: function(){
+        if(time.amount > 150){
+          player.streak = 'god';
+        }else if(time.amount > 120){
+          player.streak = 'prodigy';
+        }else if(time.amount > 90){
+          player.streak = 'unstoppable';
+        }else if(time.amount > 60){
+          player.streak = 'on-fire';
+        }else if(time.amount > 30){
+          player.streak = 'heating-up';
+        }else{
+          player.streak = null;
+        }
+      },
       draw: function(){
         ctx.fillStyle = 'rgb(136, 26, 203)';
         if(poweredUp){
@@ -278,6 +312,24 @@ $(document).ready(function() {
             default:
             break;
           }
+        }else if (player.streak !== null){
+          switch (player.streak) {
+            case 'heating-up':
+            ctx.fillStyle = 'rgb(136, 26, 203)';
+            break;
+            case 'on-fire':
+            ctx.fillStyle = 'rgb(241, 17, 17)';
+            break;
+            case 'unstoppable':
+            ctx.fillStyle = 'rgb(241, 17, 17)';
+            break;
+            case 'prodigy':
+            ctx.fillStyle = 'rgb(245, 236, 33)';
+            break;
+            case 'god':
+            ctx.fillStyle = 'rgb(245, 236, 33)';
+            break;
+          }
         }
         ctx.fillRect(this.x, this.y, this.width, this.height);
       }
@@ -288,12 +340,14 @@ $(document).ready(function() {
     function draw(){
       ctx.clearRect(0,0, canvas.width, canvas.height);
       //initial game instructions
-      if(time.amount < 3) drawInstructions();
+      if(time.amount < 3) drawText('instructions');
       //player creation, movement, and out of bounds
+      player.checkStreak();
       player.draw();
       move(player);
-      if(outOfBounds(player)) drawWarning();
+      if(outOfBounds(player)) drawText('out-of-bounds');
       isGameOver = false;
+      if(fuelBar.amount < 3) drawText('low-fuel');
       //Iterate through array of obstacles---------
       itemArray.forEach(function(item, index){
         item.draw();
@@ -316,29 +370,29 @@ $(document).ready(function() {
         }
       });
       //Powered up message instructions
-      if(poweredUp){
-        switch (player.power) {
-          case 'quantum-blast':
-          if (player.power === 'quantum-blast') quantumBlastMessage();
-          break;
-          case 'particle-slow':
-          itemArray.forEach(function(item){
-            if(player.power === 'particle-slow') particleSlowMessage();
-          });
-          break;
-          case 'atomic-shrink':
-          itemArray.forEach(function(item){
-            if(player.power === 'atomic-shrink') atomicShrinkMessage();
-          });
-          break;
-        }
-      }
+      // if(poweredUp){
+      //   switch (player.power) {
+      //     case 'quantum-blast':
+      //     if (player.power === 'quantum-blast') drawText('quantum-blast');
+      //     break;
+      //     case 'particle-slow':
+      //     itemArray.forEach(function(item){
+      //       if(player.power === 'particle-slow') drawText('particle-slow');
+      //     });
+      //     break;
+      //     case 'atomic-shrink':
+      //     itemArray.forEach(function(item){
+      //       if(player.power === 'atomic-shrink') drawText('atomic-shrink');
+      //     });
+      //     break;
+      //   }
+      // }
       //draw time and fuel last so its always on top
       time.draw();
       fuelBar.draw();
       if(fuelBar.amount === 0) gameOver = true;
       if(!gameOver)requestAnimationFrame(draw);
-      if(gameOver) drawGameOver();
+      if(gameOver) drawText('game-over');
     }
     requestAnimationFrame(draw);
     //Game controls WASD movement
@@ -363,9 +417,14 @@ $(document).ready(function() {
         case 69:
         //Power up using E
         if(poweredUp){
+          var end =  time.amount + 4;
           switch (player.power) {
             case 'quantum-blast':
-            itemArray = [];
+            itemArray.forEach(function(item, index){
+              if(Math.abs(player.x - item.x) < 800 && Math.abs(player.y - item.y) < 800){
+                itemArray.splice(index, 1);
+              }
+            });
             break;
             case 'particle-slow':
             itemArray.forEach(function(item){
@@ -385,7 +444,9 @@ $(document).ready(function() {
             break;
           }
           poweredUp = false;
+          drawFX(player.power);
           player.power = null;
+          //used for power-up visual fx
         }
         break;
       }  /* Act on the event */
