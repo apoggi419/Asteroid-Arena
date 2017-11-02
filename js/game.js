@@ -1,5 +1,6 @@
 $(document).ready(function() {
   var music = document.getElementById('game-music');
+  $('nav').toggle();
   music.play();
   //Item Constructor and prototypes------
   function Item(type){
@@ -264,7 +265,7 @@ $(document).ready(function() {
     var fuelBar = {
       amount: 10,
       x: canvas.width * 0.9,
-      y: canvas.height * 0.8,
+      y: canvas.height * 0.9,
       draw: function(){
         if(this.amount > 7){
           ctx.fillStyle = 'rgba(41, 236, 31, 0.64)';
@@ -320,7 +321,7 @@ $(document).ready(function() {
           switch (player.streak) {
             case 'heating-up':
             ctx.shadowBlur = 40;
-            ctx.shadowColor = "rgb(0, 0, 0)";
+            ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
             break;
             case 'on-fire':
             ctx.shadowBlur = 40;
@@ -383,6 +384,7 @@ $(document).ready(function() {
         drawText('game-over');
         drawText('final-time');
         drawText('try-again');
+        $('nav').toggle();
       }
     }
     requestAnimationFrame(draw);
