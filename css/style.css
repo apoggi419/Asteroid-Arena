@@ -1,14 +1,55 @@
 li > a{
   color: rgba(231, 83, 29, 0.93);
 }
-main > *{
+header {
   color: rgba(231, 83, 29, 0.93);
   display: flex;
   flex-flow: column wrap;
   align-items: center;
   justify-content: center;
-  padding: 2% 0;
+  padding: 1% 0;
+  border-bottom:1px solid rgba(164, 71, 11, 0.81);
+  text-align: center;
+}
+section{
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 h1{
-  border-bottom:1px solid rgba(164, 71, 11, 0.81);
+  font-size: 56px;
+}
+p{
+  width: 400px;
+}
+.try-again{
+  position: absolute;
+  bottom: 35%;
+  left: 48%;
+  visibility: hidden;
+}
+.game-space{
+  position: relative;
+  height: auto;
+}
+.asteroid{
+  color: rgb(121, 121, 122);
+}
+.fuel{
+  color: rgb(231, 163, 31);
+}
+.fuel-bar{
+  color: rgba(41, 236, 31, 0.64);
+}
+.quantum-blast{
+  color: rgb(66, 138, 223);
+}
+.atomic-shrink{
+    color: rgb(186, 35, 210);
+}
+.particle-slow{
+
+  color: rgb(55, 161, 22);
 }
