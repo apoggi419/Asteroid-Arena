@@ -1,4 +1,6 @@
 $(document).ready(function() {
+  var music = document.getElementById('game-music');
+  music.play();
   //Item Constructor and prototypes------
   function Item(type){
     this.type = type;
@@ -225,6 +227,12 @@ $(document).ready(function() {
           item.spawn();
           itemArray.push(item);
           counter++;
+          //hard mode after 120 seconds---------
+          if(time.amount > 120){
+            item = new Item('asteroid');
+            item.spawn();
+            itemArray.push(item);
+          }
         }else{
           clearInterval(intervalId);
         }
@@ -371,6 +379,7 @@ $(document).ready(function() {
       fuelBar.draw();
       if(!gameOver)requestAnimationFrame(draw);
       if(gameOver){
+        music.pause();
         drawText('game-over');
         drawText('final-time');
         drawText('try-again');
