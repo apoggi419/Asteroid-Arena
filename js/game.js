@@ -384,7 +384,7 @@ $(document).ready(function() {
         drawText('game-over');
         drawText('final-time');
         drawText('try-again');
-        $('nav').toggle();
+        $('nav').fadeToggle();
       }
     }
     requestAnimationFrame(draw);
