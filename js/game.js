@@ -19,7 +19,7 @@ $(document).ready(function() {
   };
   Item.prototype.draw = function(){
     if(this.type === 'asteroid'){
-      ctx.fillStyle = '';
+      ctx.fillStyle = 'rgb(121, 121, 122)';
     }else if(this.type === 'fuel'){
       ctx.fillStyle = 'rgb(231, 163, 31)';
     }else if(this.type === 'power-up'){
