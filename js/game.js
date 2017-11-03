@@ -144,7 +144,7 @@ $(document).ready(function() {
   function draw(){
     ctx.clearRect(0,0, canvas.width, canvas.height);
     //player creation, movement, and out of bounds
-    if(player.quasarActivated) genereateQuasar();
+    if(player.quasarActivated) generateQuasar();
     player.checkStreak();
     player.draw();
     checkFuelBar();
@@ -247,7 +247,7 @@ $(document).ready(function() {
       break;
     }  /* Act on the event */
   });
-  function genereateQuasar(){
+  function generateQuasar(){
     if(quasarEnd > time.amount){
       verticalQuasar.height = canvas.height;
       verticalQuasar.width = player.width;
@@ -344,12 +344,14 @@ $(document).ready(function() {
         if(counter % 4 === 0 && time.amount > 40 )createItem('asteroid');
         //insane mode
         if(counter % 2 === 0 && time.amount > 60)createItem('asteroid');
+        //almost impossible mode
+        if(counter % 2 === 0 && time.amount > 85)createItem('asteroid');
         //impossible mode
-        if(time.amount > 90)createItem('asteroid');
+        if(counter % 2 === 0 && time.amount > 110)createItem('asteroid');
         //don't even bother mode
-        if(time.amount > 120)createItem('asteroid');
+        if(counter % 2 === 0 && time.amount > 140)createItem('asteroid');
         //you're a hacker mode
-        if(time.amount > 150)createItem('asteroid');
+        if(time.amount > 160)createItem('asteroid');
       }else{
         clearInterval(intervalId);
       }
