@@ -297,6 +297,7 @@ $(document).ready(function() {
         itemArray.splice(index, 1);
       }
       if(item.crashWith(player)){
+        if(player.intangible && item.type === 'asteroid') itemArray.splice(index,1);
         if(item.type === 'asteroid' && !player.intangible){
           gameOver = true;
           document.getElementById('game-over-sound').play();
