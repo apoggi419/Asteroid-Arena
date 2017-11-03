@@ -338,14 +338,16 @@ $(document).ready(function() {
         //normal mode
         createItem('asteroid');
         //hard mode
-        if(counter % 8 === 0 && time.amount > 30)createItem('asteroid');
+        if(counter % 8 === 0 && time.amount > 20)createItem('asteroid');
         //very hard mode
-        if(counter % 4 === 0 && time.amount > 60 )createItem('asteroid');
+        if(counter % 4 === 0 && time.amount > 40 )createItem('asteroid');
         //insane mode
-        if(counter % 2 === 0 && time.amount > 90)createItem('asteroid');
+        if(counter % 2 === 0 && time.amount > 60)createItem('asteroid');
         //impossible mode
-        if(time.amount > 120)createItem('asteroid');
+        if(time.amount > 90)createItem('asteroid');
         //don't even bother mode
+        if(time.amount > 120)createItem('asteroid');
+        //dyou're a hacker mode
         if(time.amount > 150)createItem('asteroid');
       }else{
         clearInterval(intervalId);
