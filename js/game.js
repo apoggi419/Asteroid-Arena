@@ -324,35 +324,39 @@ $(document).ready(function() {
     var counter = 0;
     var intervalId = setInterval(function(){
       if(!gameOver){
-        var item;
-        if(counter % 10 === 0 && counter != 0){
-          item = new Item('power-up');
-          item.spawn();
-          itemArray.push(item);
+        counter++;
+        if(counter % 10 === 0){
+          createItem('power-up');
         }
-        if(counter % 12 === 0 && counter != 0){
+        if(counter % 12 === 0){
           if(fuelBar.amount > 0)fuelBar.amount--;
         }
-        if(counter % 4 === 0 && counter != 0){
-          item = new Item('fuel');
-          item.spawn();
-          itemArray.push(item);
+        if(counter % 4 === 0){
+          createItem('fuel');
           time.amount++;
         }
-        item = new Item('asteroid');
-        item.spawn();
-        itemArray.push(item);
-        counter++;
-        //hard mode after 120 seconds---------
-        if(time.amount > 120){
-          item = new Item('asteroid');
-          item.spawn();
-          itemArray.push(item);
-        }
+        //normal mode
+        createItem('asteroid');
+        //hard mode
+        if(counter % 8 === 0 && time.amount > 30)createItem('asteroid');
+        //very hard mode
+        if(counter % 4 === 0 && time.amount > 60 )createItem('asteroid');
+        //insane mode
+        if(counter % 2 === 0 && time.amount > 90)createItem('asteroid');
+        //impossible mode
+        if(time.amount > 120)createItem('asteroid');
+        //don't even bother mode
+        if(time.amount > 150)createItem('asteroid');
       }else{
         clearInterval(intervalId);
       }
     }, 250);
+  }
+  //item creation
+  function createItem(itemType){
+    var item = new Item(itemType);
+    item.spawn();
+    itemArray.push(item);
   }
   //Item Constructor and prototypes------
   function Item(type){
