@@ -1,4 +1,7 @@
 $(document).ready(function() {
+  window.onblur = function(){
+    gameOver = true;
+  };
   var music = document.getElementById('game-music');
   $('nav').toggle();
   music.play();
