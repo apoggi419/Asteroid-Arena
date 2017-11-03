@@ -223,11 +223,10 @@ $(document).ready(function() {
   //interval to spawn game objects and track time
   function checkIntangibility(){
 
-    if(player.intangible){
-      if(time.amount > intangibleEnd){
+    if(player.intangible && time.amount > intangibleEnd){
           player.intangible = false;
           intangibleEnd = null;
-        }
+
     }
   }
   function obstacleIterator(){
