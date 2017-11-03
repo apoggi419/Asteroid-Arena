@@ -196,8 +196,8 @@ $(document).ready(function() {
           case 'atomic-shrink':
           itemArray.forEach(function(item, index){
             if(item.type === 'asteroid'){
-              item.height *= 0.3;
-              item.width *= 0.3;
+              item.height *= 0.33;
+              item.width *= 0.33;
               if(item.height < 7 || item.width < 7){
                 itemArray.splice(index, 1);
               }
