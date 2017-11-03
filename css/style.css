@@ -46,6 +46,9 @@ p{
 
   color: rgb(55, 161, 22);
 }
+.red{
+  color:rgb(164, 0, 0);
+}
 .fill-gray{
   background-color: rgb(121, 121, 122);
 }
@@ -66,6 +69,9 @@ p{
 }
 .fill-black{
   background-color: black;
+}
+.fill-red{
+  background-color: rgb(164, 0, 0);
 }
 .square{
   width: 10px;

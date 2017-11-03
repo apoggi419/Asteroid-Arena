@@ -11,9 +11,22 @@ $(document).ready(function() {
   var itemArray = [];
   var poweredUp = false;
   var cloakTime = 5;
+  var quasarEnd = null;
   // add here first to design a new powerType
-  var powerTypes = ['quantum-blast', 'particle-slow', 'atomic-shrink', 'antimatter-cloak' ];
+  var powerTypes = ['quantum-blast', 'particle-slow', 'atomic-shrink', 'antimatter-cloak', 'quasar-beam' ];
   //Unique Game Objects----------------
+  var verticalQuasar = {
+    height: null,
+    width: null,
+    x: null,
+    y: null,
+  };
+  var horizontalQuasar = {
+    height: null,
+    width: null,
+    x: null,
+    y: null,
+  };
   // this just keeps the current trial time
   var time = {
     amount: 0,
@@ -52,6 +65,7 @@ $(document).ready(function() {
     power:null,
     streak:null,
     intangible:false,
+    quasarActivated: false,
     //streak for lasting a long time
     checkStreak: function(){
       if(time.amount > 90){
@@ -124,6 +138,7 @@ $(document).ready(function() {
   function draw(){
     ctx.clearRect(0,0, canvas.width, canvas.height);
     //player creation, movement, and out of bounds
+    if(player.quasarActivated) genereateQuasar();
     player.checkStreak();
     player.draw();
     checkFuelBar();
@@ -211,6 +226,11 @@ $(document).ready(function() {
           player.intangible = true;
           document.getElementById('antimatter-cloak-sound').play();
           break;
+          case 'quasar-beam':
+          quasarEnd = time.amount + 2;
+          player.quasarActivated = true;
+          document.getElementById('quasar-beam-sound').play();
+          break;
         }
         poweredUp = false;
         // drawFX(player.power);
@@ -220,7 +240,36 @@ $(document).ready(function() {
       break;
     }  /* Act on the event */
   });
-  //interval to spawn game objects and track time
+  function genereateQuasar(){
+    if(quasarEnd > time.amount){
+      verticalQuasar.height = canvas.height;
+      verticalQuasar.width = player.width;
+      verticalQuasar.x = player.x;
+      verticalQuasar.y = 0;
+      horizontalQuasar.height= player.height;
+      horizontalQuasar.width = canvas.width;
+      horizontalQuasar.x = 0;
+      horizontalQuasar.y = player.y;
+      ctx.shadowBlur = 40;
+      ctx.shadowColor = "rgb(164, 0, 0)";
+      ctx.fillStyle = 'rgb(164, 0, 0)';
+      ctx.fillRect(verticalQuasar.x, verticalQuasar.y, verticalQuasar.width, verticalQuasar.height);
+      ctx.fillRect(horizontalQuasar.x, horizontalQuasar.y, horizontalQuasar.width, horizontalQuasar.height);
+      ctx.shadowBlur = 0;
+    }else{
+      quasarEnd = null;
+      player.quasarActivated = false;
+      verticalQuasar.height = null;
+      verticalQuasar.width = null;
+      verticalQuasar.x = null;
+      verticalQuasar.y = null;
+      horizontalQuasar.height= null;
+      horizontalQuasar.width = null;
+      horizontalQuasar.x = null;
+      horizontalQuasar.y = null;
+    }
+
+  }
   function checkIntangibility(){
 
     if(player.intangible && time.amount > intangibleEnd){
@@ -259,6 +308,9 @@ $(document).ready(function() {
           player.power = item.powerType;
           itemArray.splice(index, 1);
         }
+      }
+      if(player.quasarActivated && ( item.crashWith(verticalQuasar) || item.crashWith(horizontalQuasar) ) ){
+        itemArray.splice(index,1);
       }
     });
   }
@@ -341,6 +393,9 @@ $(document).ready(function() {
         break;
         case 'antimatter-cloak':
         ctx.fillStyle = 'black';
+        break;
+        case 'quasar-beam':
+        ctx.fillStyle = 'rgb(164, 0, 0)';
         break;
       }
       break;
