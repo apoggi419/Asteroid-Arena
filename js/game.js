@@ -96,7 +96,7 @@ $(document).ready(function() {
           break;
           case 'on-fire':
           ctx.shadowBlur = 40;
-          ctx.shadowColor =  "rgb(104, 13, 236)";
+          ctx.shadowColor =  "rgb(6, 248, 255)";
           break;
           case 'unstoppable':
           ctx.shadowBlur = 40;
@@ -108,7 +108,7 @@ $(document).ready(function() {
           break;
         }
       }
-      if(player.intangible)ctx.fillStyle = 'rgba(104, 13, 236, 0.30)';
+      if(player.intangible) cloakActivated();
       ctx.fillRect(this.x, this.y, this.width, this.height);
       //after 120 seconds everything glows!
       if(time.amount < 120 ){
@@ -179,8 +179,8 @@ $(document).ready(function() {
         switch (player.power) {
           case 'quantum-blast':
           itemArray.forEach(function(item, index){
-            if(Math.abs(player.x - item.x) < player.width * 30 &&
-            Math.abs(player.y - item.y) < player.height * 30 &&
+            if(Math.abs(player.x - item.x) < generateRandom(player.width * 40, player.width * 15) &&
+            Math.abs(player.y - item.y) < generateRandom(player.height * 40, player.height * 15) &&
             item.type == "asteroid"){
               itemArray.splice(index, 1);
             }
@@ -228,6 +228,16 @@ $(document).ready(function() {
           intangibleEnd = null;
 
     }
+  }
+  function cloakActivated(){
+    ctx.fillStyle = 'rgba(104, 13, 236, 0.30)';
+    // var cloakCounter = 0;
+    // var cloakInterval = setInterval(function(){
+    //   cloakCounter++;
+    //   if(time.amount  > intangibleEnd - 2 && cloakCounter % 2 === 0){
+    //     ctx.fillStyle = 'rgb(104, 13, 236)';
+    //   }
+    // }, 500);
   }
   function obstacleIterator(){
     itemArray.forEach(function(item, index){
