@@ -1,6 +1,7 @@
 $(document).ready(function() {
   var music = document.getElementById('game-music');
   $('nav').toggle();
+  $('*').css('cursor', 'none');
   music.play();
   var canvas = document.querySelector('.my-game');
   canvas.width = window.innerWidth;
@@ -155,6 +156,7 @@ $(document).ready(function() {
       drawText('final-time');
       drawText('try-again');
       $('nav').fadeToggle();
+      $('*').css('cursor', 'default');
     }
   }
 
@@ -280,13 +282,6 @@ $(document).ready(function() {
   }
   function cloakActivated(){
     ctx.fillStyle = 'rgba(104, 13, 236, 0.30)';
-    // var cloakCounter = 0;
-    // var cloakInterval = setInterval(function(){
-    //   cloakCounter++;
-    //   if(time.amount  > intangibleEnd - 2 && cloakCounter % 2 === 0){
-    //     ctx.fillStyle = 'rgb(104, 13, 236)';
-    //   }
-    // }, 500);
   }
   function obstacleIterator(){
     itemArray.forEach(function(item, index){
@@ -347,7 +342,7 @@ $(document).ready(function() {
         if(time.amount > 90)createItem('asteroid');
         //don't even bother mode
         if(time.amount > 120)createItem('asteroid');
-        //dyou're a hacker mode
+        //you're a hacker mode
         if(time.amount > 150)createItem('asteroid');
       }else{
         clearInterval(intervalId);
