@@ -210,15 +210,15 @@ $(document).ready(function() {
           break;
           case 'particle-slow':
           itemArray.forEach(function(item){
-            if(item.type === 'asteroid') item.speed *= 0.3;
+            if(item.type === 'asteroid') item.speed *= 0.24;
           });
           document.getElementById('particle-slow-sound').play();
           break;
           case 'atomic-shrink':
           itemArray.forEach(function(item, index){
             if(item.type === 'asteroid'){
-              item.height *= 0.33;
-              item.width *= 0.33;
+              item.height *= 0.36;
+              item.width *= 0.36;
               if(item.height < 7 || item.width < 7){
                 itemArray.splice(index, 1);
               }
@@ -308,7 +308,7 @@ $(document).ready(function() {
           itemArray.splice(index, 1);
         }
       }
-      if(player.quasarActivated && ( item.crashWith(verticalQuasar) || item.crashWith(horizontalQuasar) ) ){
+      if(player.quasarActivated && item.type !== 'power-up' && ( item.crashWith(verticalQuasar) || item.crashWith(horizontalQuasar) ) ){
         itemArray.splice(index,1);
       }
     });
