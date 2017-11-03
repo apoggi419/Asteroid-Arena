@@ -224,11 +224,6 @@ $(document).ready(function() {
   function checkIntangibility(){
 
     if(player.intangible){
-      // ctx.beginPath();
-      // ctx.arc(canvas.width/2, canvas.height/2, 30, 0, Math.PI * 2 *((intangibleEnd-time.amount) / cloakTime), anticlockwise);
-      // ctx.closePath();
-      // ctx.fillStyle('rgba(0, 0, 0, 0.4)');
-      // ctx.fill();
       if(time.amount > intangibleEnd){
           player.intangible = false;
           intangibleEnd = null;
