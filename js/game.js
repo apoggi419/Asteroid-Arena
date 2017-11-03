@@ -2,6 +2,302 @@ $(document).ready(function() {
   var music = document.getElementById('game-music');
   $('nav').toggle();
   music.play();
+  var canvas = document.querySelector('.my-game');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var ctx = canvas.getContext('2d');
+  var intangibleEnd = null;
+  var gameOver = false;
+  var itemArray = [];
+  var poweredUp = false;
+  var cloakTime = 5;
+  // add here first to design a new powerType
+  var powerTypes = ['quantum-blast', 'particle-slow', 'atomic-shrink', 'antimatter-cloak' ];
+  //Unique Game Objects----------------
+  // this just keeps the current trial time
+  var time = {
+    amount: 0,
+    x:canvas.width * 0.95,
+    y: canvas.height * 0.05,
+    draw: function(){
+      ctx.fillStyle = 'black';
+      ctx.font = '24px sans-serif';
+      ctx.fillText(this.amount,this.x, this.y);
+    }
+  };
+  //fuel bar runs out, you lose
+  var fuelBar = {
+    amount: 10,
+    x: canvas.width * 0.9,
+    y: canvas.height * 0.9,
+    draw: function(){
+      if(this.amount > 7){
+        ctx.fillStyle = 'rgba(41, 236, 31, 0.64)';
+      }else if(this.amount > 3){
+        ctx.fillStyle = 'rgba(219, 241, 37, 0.63)';
+      }else{
+        ctx.fillStyle = 'rgba(244, 16, 16, 0.68)';
+      }
+      ctx.fillRect(this.x, this.y, this.amount * 10, 50);
+    }
+  };
+  //controlled player object
+  var player = {
+    x: canvas.width/2,
+    y: canvas.height/2,
+    height: 30,
+    width:30,
+    speed: 3,
+    direction:'',
+    power:null,
+    streak:null,
+    intangible:false,
+    //streak for lasting a long time
+    checkStreak: function(){
+      if(time.amount > 90){
+        player.streak = 'god';
+      }else if(time.amount > 60){
+        player.streak = 'unstoppable';
+      }else if(time.amount > 40){
+        player.streak = 'on-fire';
+      }else if(time.amount > 20){
+        player.streak = 'heating-up';
+      }else{
+        player.streak = null;
+      }
+    },
+    //player turns color of powerup collected
+    draw: function(){
+      ctx.fillStyle = 'rgb(104, 13, 236)';
+      if(poweredUp){
+        switch (this.power) {
+          case 'quantum-blast':
+          ctx.fillStyle = 'rgb(66, 138, 223)';
+          break;
+          case 'particle-slow':
+          ctx.fillStyle = 'rgb(55, 161, 22)';
+          break;
+          case 'atomic-shrink':
+          ctx.fillStyle = 'rgb(186, 35, 210)';
+          break;
+          case 'antimatter-cloak':
+          ctx.fillStyle = 'black';
+          break;
+          default:
+          break;
+        }
+      }
+      //glow color assignment below for streak
+      if (player.streak !== null){
+        switch (player.streak) {
+          case 'heating-up':
+          ctx.shadowBlur = 40;
+          ctx.shadowColor = "rgba(0, 252, 10, 1)";
+          break;
+          case 'on-fire':
+          ctx.shadowBlur = 40;
+          ctx.shadowColor =  "rgb(104, 13, 236)";
+          break;
+          case 'unstoppable':
+          ctx.shadowBlur = 40;
+          ctx.shadowColor = "rgb(255, 0, 0)";
+          break;
+          case 'god':
+          ctx.shadowBlur = 40;
+          ctx.shadowColor = 'rgb(255, 244, 0)';
+          break;
+        }
+      }
+      if(player.intangible)ctx.fillStyle = 'rgba(104, 13, 236, 0.30)';
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+      //after 120 seconds everything glows!
+      if(time.amount < 120 ){
+        ctx.shadowBlur = 0;
+      }
+    }
+  };
+  //End Unique Game Objects------------------
+  //call interval for clock and item spawn
+  createItemInterval();
+  //game render
+  requestAnimationFrame(draw);
+  function draw(){
+    ctx.clearRect(0,0, canvas.width, canvas.height);
+    //player creation, movement, and out of bounds
+    player.checkStreak();
+    player.draw();
+    checkFuelBar();
+    checkIntangibility();
+    //Iterate through array of obstacles---------
+    obstacleIterator();
+    //draw UI
+    time.draw();
+    fuelBar.draw();
+    if(!gameOver)requestAnimationFrame(draw);
+    if(gameOver){
+      music.pause();
+      drawText('game-over');
+      drawText('final-time');
+      drawText('try-again');
+      $('nav').fadeToggle();
+    }
+  }
+
+  //Game controls WASD movement
+  $(document).keydown(function(event) {
+    event.preventDefault();
+    switch (event.keyCode) {
+      case 82:
+      if(gameOver){
+        location.reload();
+      }
+      break;
+      //move left
+      case 65:
+      case 37:
+      player.direction = 'left';
+      break;
+      // move up
+      case 87:
+      case 38:
+      player.direction = 'up';
+      break;
+      case 68:
+      case 39:
+      //move right
+      player.direction = 'right';
+      break;
+      //move down
+      case 83:
+      case 40:
+      player.direction = 'down';
+      break;
+      case 69:
+      case 32:
+      //Power up abilities and sounds
+      if(poweredUp){
+        switch (player.power) {
+          case 'quantum-blast':
+          itemArray.forEach(function(item, index){
+            if(Math.abs(player.x - item.x) < player.width * 30 &&
+            Math.abs(player.y - item.y) < player.height * 30 &&
+            item.type == "asteroid"){
+              itemArray.splice(index, 1);
+            }
+          });
+          document.getElementById('quantum-blast-sound').play();
+          break;
+          case 'particle-slow':
+          itemArray.forEach(function(item){
+            if(item.type === 'asteroid') item.speed *= 0.3;
+          });
+          document.getElementById('particle-slow-sound').play();
+          break;
+          case 'atomic-shrink':
+          itemArray.forEach(function(item, index){
+            if(item.type === 'asteroid'){
+              item.height *= 0.3;
+              item.width *= 0.3;
+              if(item.height < 7 || item.width < 7){
+                itemArray.splice(index, 1);
+              }
+            }
+          });
+          document.getElementById('atomic-shrink-sound').play();
+          break;
+          case 'antimatter-cloak':
+          //10 second intangibility set here
+          intangibleEnd =  time.amount + cloakTime;
+          player.intangible = true;
+          document.getElementById('antimatter-cloak-sound').play();
+          break;
+        }
+        poweredUp = false;
+        // drawFX(player.power);
+        player.power = null;
+        //used for power-up visual fx
+      }
+      break;
+    }  /* Act on the event */
+  });
+  //interval to spawn game objects and track time
+  function checkIntangibility(){
+
+    if(player.intangible){
+      // ctx.beginPath();
+      // ctx.arc(canvas.width/2, canvas.height/2, 30, 0, Math.PI * 2 *((intangibleEnd-time.amount) / cloakTime), anticlockwise);
+      // ctx.closePath();
+      // ctx.fillStyle('rgba(0, 0, 0, 0.4)');
+      // ctx.fill();
+      if(time.amount > intangibleEnd){
+          player.intangible = false;
+          intangibleEnd = null;
+        }
+    }
+  }
+  function obstacleIterator(){
+    itemArray.forEach(function(item, index){
+      item.draw();
+      move(item);
+      //destroy out of bounds items
+      if(outOfBounds(item)){
+        itemArray.splice(index, 1);
+      }
+      if(item.crashWith(player)){
+        if(item.type === 'asteroid' && !player.intangible){
+          gameOver = true;
+          document.getElementById('game-over-sound').play();
+        }else if(item.type === 'fuel'){
+          if(fuelBar.amount < 10) fuelBar.amount++;
+          itemArray.splice(index, 1);
+        }else if(item.type === 'power-up'){
+          poweredUp = true;
+          player.power = item.powerType;
+          itemArray.splice(index, 1);
+        }
+      }
+    });
+  }
+  function checkFuelBar(){
+    if(fuelBar.amount > 0) move(player);
+    if(fuelBar.amount < 3 && fuelBar.amount > 0) drawText('low-fuel');
+    if(fuelBar.amount === 0)drawText('no-fuel');
+  }
+  //spawns items on intervals and add to item array
+  function createItemInterval(){
+    var counter = 0;
+    var intervalId = setInterval(function(){
+      if(!gameOver){
+        var item;
+        if(counter % 10 === 0 && counter != 0){
+          item = new Item('power-up');
+          item.spawn();
+          itemArray.push(item);
+        }
+        if(counter % 12 === 0 && counter != 0){
+          if(fuelBar.amount > 0)fuelBar.amount--;
+        }
+        if(counter % 4 === 0 && counter != 0){
+          item = new Item('fuel');
+          item.spawn();
+          itemArray.push(item);
+          time.amount++;
+        }
+        item = new Item('asteroid');
+        item.spawn();
+        itemArray.push(item);
+        counter++;
+        //hard mode after 120 seconds---------
+        if(time.amount > 120){
+          item = new Item('asteroid');
+          item.spawn();
+          itemArray.push(item);
+        }
+      }else{
+        clearInterval(intervalId);
+      }
+    }, 250);
+  }
   //Item Constructor and prototypes------
   function Item(type){
     this.type = type;
@@ -21,17 +317,29 @@ $(document).ready(function() {
     }
   };
   Item.prototype.draw = function(){
-    if(this.type === 'asteroid'){
+    switch (this.type) {
+      case 'asteroid':
       ctx.fillStyle = 'rgb(121, 121, 122)';
-    }else if(this.type === 'fuel'){
+      break;
+      case 'fuel':
       ctx.fillStyle = 'rgb(231, 163, 31)';
-    }else if(this.type === 'power-up'){
-      if(this.powerType === 'quantum-blast'){
+      break;
+      case 'power-up':
+      switch (this.powerType) {
+        case 'quantum-blast':
         ctx.fillStyle = 'rgb(66, 138, 223)';
-      }else if(this.powerType === 'particle-slow'){
+        break;
+        case 'particle-slow':
         ctx.fillStyle = 'rgb(55, 161, 22)';
-      }else if(this.powerType === 'atomic-shrink')
-      ctx.fillStyle = 'rgb(186, 35, 210)';
+        break;
+        case 'atomic-shrink':
+        ctx.fillStyle = 'rgb(186, 35, 210)';
+        break;
+        case 'antimatter-cloak':
+        ctx.fillStyle = 'black';
+        break;
+      }
+      break;
     }
     ctx.fillRect(this.x, this.y, this.width, this.height);
   };
@@ -204,260 +512,4 @@ $(document).ready(function() {
       ctx.textAlign = 'center';
       ctx.fillText(currentMsg.fillText,currentMsg.x, currentMsg.y);
     }
-    function createItemInterval(){
-      var counter = 0;
-      var intervalId = setInterval(function(){
-        //drawFX here
-        if(!gameOver){
-          var item;
-          if(counter % 10 === 0 && counter != 0){
-            item = new Item('power-up');
-            item.spawn();
-            itemArray.push(item);
-          }
-          if(counter % 12 === 0 && counter != 0){
-            if(fuelBar.amount > 0)fuelBar.amount--;
-          }
-          if(counter % 4 === 0 && counter != 0){
-            item = new Item('fuel');
-            item.spawn();
-            itemArray.push(item);
-            time.amount++;
-          }
-          item = new Item('asteroid');
-          item.spawn();
-          itemArray.push(item);
-          counter++;
-          //hard mode after 120 seconds---------
-          if(time.amount > 120){
-            item = new Item('asteroid');
-            item.spawn();
-            itemArray.push(item);
-          }
-        }else{
-          clearInterval(intervalId);
-        }
-      }, 250);
-    }
-    //Game rendering
-    var canvas = document.querySelector('.my-game');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    var ctx = canvas.getContext('2d');
-    var gameOver = false;
-    var itemArray = [];
-    var poweredUp = false;
-    // add here first to design a new powerType
-    var powerTypes = ['quantum-blast', 'particle-slow', 'atomic-shrink' ];
-    //Unique Game Objects----------------
-    // this just keeps the current trial time
-    var time = {
-      amount: 0,
-      x:canvas.width * 0.95,
-      y: canvas.height * 0.05,
-      draw: function(){
-        ctx.fillStyle = 'black';
-        ctx.font = '24px sans-serif';
-        ctx.fillText(this.amount,this.x, this.y);
-      }
-    };
-    //fuel bar runs out, you lose
-    var fuelBar = {
-      amount: 10,
-      x: canvas.width * 0.9,
-      y: canvas.height * 0.9,
-      draw: function(){
-        if(this.amount > 7){
-          ctx.fillStyle = 'rgba(41, 236, 31, 0.64)';
-        }else if(this.amount > 3){
-          ctx.fillStyle = 'rgba(219, 241, 37, 0.63)';
-        }else{
-          ctx.fillStyle = 'rgba(244, 16, 16, 0.68)';
-        }
-        ctx.fillRect(this.x, this.y, this.amount * 10, 50);
-      }
-    };
-    //controlled player object
-    var player = {
-      x: canvas.width/2,
-      y: canvas.height/2,
-      height: 30,
-      width:30,
-      speed: 3,
-      direction:'',
-      power:null,
-      streak:null,
-      checkStreak: function(){
-        if(time.amount > 90){
-          player.streak = 'god';
-        }else if(time.amount > 60){
-          player.streak = 'unstoppable';
-        }else if(time.amount > 40){
-          player.streak = 'on-fire';
-        }else if(time.amount > 20){
-          player.streak = 'heating-up';
-        }else{
-          player.streak = null;
-        }
-      },
-      draw: function(){
-        ctx.fillStyle = 'rgb(104, 13, 236)';
-        if(poweredUp){
-          switch (this.power) {
-            case 'quantum-blast':
-            ctx.fillStyle = 'rgb(66, 138, 223)';
-            break;
-            case 'particle-slow':
-            ctx.fillStyle = 'rgb(55, 161, 22)';
-            break;
-            case 'atomic-shrink':
-            ctx.fillStyle = 'rgb(186, 35, 210)';
-            break;
-            default:
-            break;
-          }
-        }
-        if (player.streak !== null){
-          switch (player.streak) {
-            case 'heating-up':
-            ctx.shadowBlur = 40;
-            ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
-            break;
-            case 'on-fire':
-            ctx.shadowBlur = 40;
-            ctx.shadowColor =  "rgb(104, 13, 236)";
-            break;
-            case 'unstoppable':
-            ctx.shadowBlur = 40;
-            ctx.shadowColor = "rgb(255, 0, 0)";
-            break;
-            case 'god':
-            ctx.shadowBlur = 40;
-            ctx.shadowColor = 'rgb(255, 244, 0)';
-            break;
-          }
-        }
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        if(time.amount < 120 ){
-          ctx.shadowBlur = 0;
-        }
-      }
-    };
-    //End Unique Game Objects------------------
-    //interval for clock, item spawn, etc.
-    createItemInterval();
-    function draw(){
-      ctx.clearRect(0,0, canvas.width, canvas.height);
-      //player creation, movement, and out of bounds
-      player.checkStreak();
-      player.draw();
-      if(fuelBar.amount > 0) move(player);
-      if(fuelBar.amount < 3 && fuelBar.amount > 0) drawText('low-fuel');
-      if(fuelBar.amount === 0)drawText('no-fuel');
-      //Iterate through array of obstacles---------
-      itemArray.forEach(function(item, index){
-        item.draw();
-        move(item);
-        //destroy out of bounds items
-        if(outOfBounds(item)){
-          itemArray.splice(index, 1);
-        }
-        if(item.crashWith(player)){
-          if(item.type === 'asteroid'){
-            gameOver = true;
-            document.getElementById('game-over-sound').play();
-          }else if(item.type === 'fuel'){
-            if(fuelBar.amount < 10) fuelBar.amount++;
-            itemArray.splice(index, 1);
-          }else if(item.type === 'power-up'){
-            poweredUp = true;
-            player.power = item.powerType;
-            itemArray.splice(index, 1);
-          }
-        }
-      });
-      time.draw();
-      fuelBar.draw();
-      if(!gameOver)requestAnimationFrame(draw);
-      if(gameOver){
-        music.pause();
-        drawText('game-over');
-        drawText('final-time');
-        drawText('try-again');
-        $('nav').fadeToggle();
-      }
-    }
-    requestAnimationFrame(draw);
-    //Game controls WASD movement
-    $(document).keydown(function(event) {
-      event.preventDefault();
-      switch (event.keyCode) {
-        case 82:
-        if(gameOver){
-          location.reload();
-        }
-        break;
-        //move left
-        case 65:
-        case 37:
-        player.direction = 'left';
-        break;
-        // move up
-        case 87:
-        case 38:
-        player.direction = 'up';
-        break;
-        case 68:
-        case 39:
-        //move right
-        player.direction = 'right';
-        break;
-        //move down
-        case 83:
-        case 40:
-        player.direction = 'down';
-        break;
-        case 69:
-        case 32:
-        //Power up using E
-        if(poweredUp){
-          var end =  time.amount + 4;
-          switch (player.power) {
-            case 'quantum-blast':
-            itemArray.forEach(function(item, index){
-              if(Math.abs(player.x - item.x) < player.width * 30 &&
-                Math.abs(player.y - item.y) < player.height * 30 &&
-                item.type == "asteroid"){
-                itemArray.splice(index, 1);
-              }
-            });
-            document.getElementById('quantum-blast-sound').play();
-            break;
-            case 'particle-slow':
-            itemArray.forEach(function(item){
-              if(item.type === 'asteroid') item.speed *= 0.3;
-            });
-            document.getElementById('particle-slow-sound').play();
-            break;
-            case 'atomic-shrink':
-            itemArray.forEach(function(item, index){
-              if(item.type === 'asteroid'){
-                item.height *= 0.3;
-                item.width *= 0.3;
-                if(item.height < 7 || item.width < 7){
-                  itemArray.splice(index, 1);
-                }
-              }
-            });
-            document.getElementById('atomic-shrink-sound').play();
-            break;
-          }
-          poweredUp = false;
-          // drawFX(player.power);
-          player.power = null;
-          //used for power-up visual fx
-        }
-        break;
-      }  /* Act on the event */
-    });
   });

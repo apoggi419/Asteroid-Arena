@@ -62,8 +62,10 @@ p{
     background-color: rgb(186, 35, 210);
 }
 .fill-green{
-
   background-color: rgb(55, 161, 22);
+}
+.fill-black{
+  background-color: black;
 }
 .square{
   width: 10px;
