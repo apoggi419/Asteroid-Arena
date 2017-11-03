@@ -217,8 +217,8 @@ $(document).ready(function() {
           case 'atomic-shrink':
           itemArray.forEach(function(item, index){
             if(item.type === 'asteroid'){
-              item.height *= 0.36;
-              item.width *= 0.36;
+              item.height *= 0.4;
+              item.width *= 0.4;
               if(item.height < 7 || item.width < 7){
                 itemArray.splice(index, 1);
               }
@@ -233,6 +233,7 @@ $(document).ready(function() {
           document.getElementById('antimatter-cloak-sound').play();
           break;
           case 'quasar-beam':
+          //set quasar beam duration here
           quasarEnd = time.amount + 2;
           player.quasarActivated = true;
           document.getElementById('quasar-beam-sound').play();
