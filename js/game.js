@@ -1,7 +1,6 @@
 $(document).ready(function() {
   var music = document.getElementById('game-music');
   $('nav').toggle();
-  $('*').css('cursor', 'none');
   music.play();
   var canvas = document.querySelector('.my-game');
   canvas.width = window.innerWidth;
@@ -98,6 +97,9 @@ $(document).ready(function() {
           case 'antimatter-cloak':
           ctx.fillStyle = 'black';
           break;
+          case 'quasar-beam':
+          ctx.fillStyle = "rgb(164, 0, 0)";
+          break;
           default:
           break;
         }
@@ -156,10 +158,9 @@ $(document).ready(function() {
       drawText('final-time');
       drawText('try-again');
       $('nav').fadeToggle();
-      $('*').css('cursor', 'default');
+      $('canvas').css('cursor', 'default');
     }
   }
-
   //Game controls WASD movement
   $(document).keydown(function(event) {
     event.preventDefault();

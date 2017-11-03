@@ -24,6 +24,9 @@ h1{
 p{
   width: 400px;
 }
+canvas{
+  cursor: none;
+}
 .author{
   color: black;
 }
