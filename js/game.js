@@ -338,7 +338,9 @@ $(document).ready(function() {
         }
         //scaled difficulty
         for(var i = time.amount;i > 0; i-=10){
-          if (counter % 10 === 0) createItem('asteroid');
+          if (counter % 12 === 0) createItem('asteroid');
+          if (counter % 120 === 0) createItem('power-up');
+          if (counter % 56 === 0) createItem('power-up');
         }
         //normal mode
         createItem('asteroid');
