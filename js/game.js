@@ -336,22 +336,12 @@ $(document).ready(function() {
           createItem('fuel');
           time.amount++;
         }
+        //scaled difficulty
+        for(var i = time.amount;i > 0; i-=10){
+          if (counter % 10 === 0) createItem('asteroid');
+        }
         //normal mode
         createItem('asteroid');
-        //hard mode
-        if(counter % 8 === 0 && time.amount > 20)createItem('asteroid');
-        //very hard mode
-        if(counter % 4 === 0 && time.amount > 40 )createItem('asteroid');
-        //insane mode
-        if(counter % 2 === 0 && time.amount > 60)createItem('asteroid');
-        //almost impossible mode
-        if(counter % 2 === 0 && time.amount > 85)createItem('asteroid');
-        //impossible mode
-        if(counter % 2 === 0 && time.amount > 110)createItem('asteroid');
-        //don't even bother mode
-        if(counter % 2 === 0 && time.amount > 140)createItem('asteroid');
-        //you're a hacker mode
-        if(time.amount > 160)createItem('asteroid');
       }else{
         clearInterval(intervalId);
       }
