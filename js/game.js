@@ -336,8 +336,8 @@ $(document).ready(function() {
         //scaled difficulty
         for(var i = time.amount;i > 0; i-=10){
           if (counter % 12 === 0) createItem('asteroid');
-          if (counter % 130 === 0) createItem('power-up');
-          if (counter % 64 === 0) createItem('power-up');
+          if (counter % 120 === 0) createItem('power-up');
+          if (counter % 48 === 0) createItem('fuel');
         }
         //normal mode
         createItem('asteroid');
