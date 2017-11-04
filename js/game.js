@@ -130,7 +130,7 @@ $(document).ready(function() {
       }
       if(player.intangible) cloakActivated();
       ctx.fillRect(this.x, this.y, this.width, this.height);
-      //after 120 seconds everything glows!
+      //after 100 seconds everything glows!
       if(time.amount < 120 ){
         ctx.shadowBlur = 0;
       }
@@ -275,14 +275,11 @@ $(document).ready(function() {
       horizontalQuasar.x = null;
       horizontalQuasar.y = null;
     }
-
   }
   function checkIntangibility(){
-
     if(player.intangible && time.amount > intangibleEnd){
           player.intangible = false;
           intangibleEnd = null;
-
     }
   }
   function cloakActivated(){
@@ -339,8 +336,8 @@ $(document).ready(function() {
         //scaled difficulty
         for(var i = time.amount;i > 0; i-=10){
           if (counter % 12 === 0) createItem('asteroid');
-          if (counter % 120 === 0) createItem('power-up');
-          if (counter % 56 === 0) createItem('power-up');
+          if (counter % 130 === 0) createItem('power-up');
+          if (counter % 64 === 0) createItem('power-up');
         }
         //normal mode
         createItem('asteroid');
