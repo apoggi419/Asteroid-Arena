@@ -130,10 +130,8 @@ $(document).ready(function() {
       }
       if(player.intangible) cloakActivated();
       ctx.fillRect(this.x, this.y, this.width, this.height);
-      //after 100 seconds everything glows!
-      if(time.amount < 120 ){
-        ctx.shadowBlur = 0;
-      }
+      //make sure shadows don't draw on everything
+      ctx.shadowBlur = 0;
     }
   };
   //End Unique Game Objects------------------
