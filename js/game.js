@@ -1,4 +1,8 @@
 $(document).ready(function() {
+  var classic = false;
+  if(window.location.href.indexOf("classic") > -1) {
+       classic = true;
+    }
   window.onblur = function(){
     gameOver = true;
   };
@@ -151,7 +155,7 @@ $(document).ready(function() {
     obstacleIterator();
     //draw UI
     time.draw();
-    fuelBar.draw();
+    if(!classic)fuelBar.draw();
     if(!gameOver)requestAnimationFrame(draw);
     if(gameOver){
       music.pause();
@@ -321,21 +325,21 @@ $(document).ready(function() {
     var intervalId = setInterval(function(){
       if(!gameOver){
         counter++;
-        if(counter % 10 === 0){
+        if(counter % 10 === 0 && !classic){
           createItem('power-up');
         }
-        if(counter % 12 === 0){
+        if(counter % 12 === 0 && !classic){
           if(fuelBar.amount > 0)fuelBar.amount--;
         }
         if(counter % 4 === 0){
-          createItem('fuel');
+          if(!classic)createItem('fuel');
           time.amount++;
         }
         //scaled difficulty
         for(var i = time.amount;i > 0; i-=10){
           if (counter % 12 === 0) createItem('asteroid');
-          if (counter % 120 === 0) createItem('power-up');
-          if (counter % 48 === 0) createItem('fuel');
+          if (counter % 120 === 0 && !classic) createItem('power-up');
+          if (counter % 48 === 0 && !classic) createItem('fuel');
         }
         //normal mode
         createItem('asteroid');
